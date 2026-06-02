@@ -127,6 +127,17 @@ a{color:var(--blue)}
 .gterm .gd{font-size:13px;color:var(--text-2);margin-top:4px}
 .gterm .gtag{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid currentColor;margin-left:8px}
 
+textarea{width:100%;min-height:110px;background:var(--input);border:1px solid var(--border);border-radius:11px;
+  color:var(--text);padding:13px;font-size:14.5px;font-family:inherit;resize:vertical;line-height:1.5}
+textarea:focus{outline:none;border-color:var(--accent)}
+.kw{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;margin:3px 4px 0 0;border:1px solid var(--border-lit)}
+.kw.hit{color:var(--green);border-color:var(--green);background:rgba(0,255,65,.08)}
+.kw.miss{color:var(--text-mut)}
+.selfgrade{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.sg{flex:1;min-width:110px;border:1px solid var(--border-lit);background:var(--input);border-radius:10px;padding:11px;
+  cursor:pointer;text-align:center;font-size:13px;font-weight:600;transition:.12s}
+.sg:hover{background:var(--card-hover)}
+.sg.g1{color:var(--green)} .sg.g05{color:var(--yellow)} .sg.g0{color:var(--accent)}
 .footer-note{text-align:center;color:var(--text-mut);font-size:12px;margin-top:34px}
 @media(max-width:680px){.modes{grid-template-columns:1fr 1fr}.qdef{font-size:16.5px}}
 </style>
@@ -152,11 +163,13 @@ a{color:var(--blue)}
   <div id="quiz" class="hidden"></div>
   <div id="results" class="hidden"></div>
   <div id="browse" class="hidden"></div>
+  <div id="practice" class="hidden"></div>
 
   <div class="footer-note" id="footer"></div>
 </div>
 
 <script src="terms.js"></script>
+<script src="practice.js"></script>
 <script>
 /* ============ TOPICS ============ */
 const TOPICS = {
@@ -179,11 +192,14 @@ const I18N = {
   ru:{
     sub:"Подготовка по официальному глоссарию ISTQB · Foundation",
     lead:"Тренажёр по официальному глоссарию ISTQB (Foundation, "+TERMS.length+" терминов). Переключай RU/EN в любой момент — определения и разборы берутся для каждого языка отдельно, а вопрос не сбрасывается.",
-    note:"EN-определения — дословно из glossary.istqb.org. RU — точный перевод официального текста (русских определений в международном API ISTQB нет).",
+    note:"EN — дословно из glossary.istqb.org. RU — официальные определения из глоссария (локаль ru_RU); для немногих терминов без официального русского дан точный перевод.",
     modeQuick:["⚡","Быстрый тест","15 вопросов со всех тем"],
     modeTopic:["🎯","По темам","Выбери одну или несколько"],
     modeMarathon:["🏁","Марафон","Все термины подряд"],
     modeBrowse:["📖","Глоссарий","Читать все определения"],
+    glossaryHead:"Глоссарий ISTQB (термины и определения)",
+    practiceHead:"Практика QA (прикладные вопросы)",
+    modePractice:["🧠","Практика QA","79 прикладных вопросов: статусы, баг-репорты, API, техники"],
     topicsTitle:"Темы",
     startTopic:"Начать тест →",
     pickHint:s=>`выбрано тем: ${s.t} · вопросов: ${s.n}`,
@@ -216,11 +232,14 @@ const I18N = {
   en:{
     sub:"Prep on the official ISTQB Glossary · Foundation",
     lead:"Trainer based on the official ISTQB glossary (Foundation, "+TERMS.length+" terms). Switch RU/EN anytime — definitions and explanations are pulled per language and the question is not reset.",
-    note:"EN definitions are verbatim from glossary.istqb.org. RU is a faithful translation (the international ISTQB API has no Russian definitions).",
+    note:"EN is verbatim from glossary.istqb.org. RU uses the official ISTQB ru_RU glossary; for the few terms without an official Russian version, a faithful translation is used.",
     modeQuick:["⚡","Quick test","15 questions, all topics"],
     modeTopic:["🎯","By topic","Pick one or more"],
     modeMarathon:["🏁","Marathon","All terms in a row"],
     modeBrowse:["📖","Glossary","Read all definitions"],
+    glossaryHead:"ISTQB Glossary (terms & definitions)",
+    practiceHead:"QA Practice (applied questions)",
+    modePractice:["🧠","QA Practice","79 applied questions: status codes, bug reports, API, techniques"],
     topicsTitle:"Topics",
     startTopic:"Start test →",
     pickHint:s=>`topics: ${s.t} · questions: ${s.n}`,
@@ -281,11 +300,12 @@ function setLang(l){
 function render(){
   document.getElementById('appSub').textContent=L().sub;
   document.getElementById('footer').textContent=L().footer;
-  ['start','quiz','results','browse'].forEach(s=>document.getElementById(s).classList.toggle('hidden',s!==screen));
+  ['start','quiz','results','browse','practice'].forEach(s=>document.getElementById(s).classList.toggle('hidden',s!==screen));
   if(screen==='start') renderStart();
   else if(screen==='quiz') renderQuiz();
   else if(screen==='results') renderResults();
   else if(screen==='browse') renderBrowse();
+  else if(screen==='practice') pRender();
 }
 
 /* ============ START ============ */
@@ -303,6 +323,7 @@ function renderStart(){
   const html=`
     <p class="lead">${m.lead}</p>
     <p class="note">${m.note}</p>
+    <div class="section-title" style="margin-top:18px">${m.glossaryHead}</div>
     <div class="modes">
       <button class="mode" onclick="startQuiz('quick')"><div class="ic">${m.modeQuick[0]}</div><div class="t">${m.modeQuick[1]}</div><div class="d">${m.modeQuick[2]}</div></button>
       <button class="mode" onclick="toggleTopicPicker()"><div class="ic">${m.modeTopic[0]}</div><div class="t">${m.modeTopic[1]}</div><div class="d">${m.modeTopic[2]}</div></button>
@@ -316,6 +337,10 @@ function renderStart(){
         <button class="btn" ${selectedTopics.size?'':'disabled'} onclick="startQuiz('topic')">${m.startTopic}</button>
         <span class="tiny">${selectedTopics.size?m.pickHint({t:selectedTopics.size,n:Math.min(TOPIC_N,pool)}):''}</span>
       </div>
+    </div>
+    <div class="section-title">${m.practiceHead}</div>
+    <div class="modes">
+      <button class="mode" style="grid-column:span 2" onclick="pStart()"><div class="ic">${m.modePractice[0]}</div><div class="t">${m.modePractice[1]}</div><div class="d">${m.modePractice[2]}</div></button>
     </div>
     ${best?`<div class="card" style="margin-top:18px;padding:14px 18px;font-size:13px;color:var(--text-2)">${m.best(best)}</div>`:''}`;
   document.getElementById('start').innerHTML=html;
@@ -469,15 +494,111 @@ function renderBrowseList(){
   const found=document.querySelector('#browse .tiny'); if(found)found.textContent=L().found(list.length);
 }
 
+/* ============ PRACTICE (applied questions) ============ */
+const PCATS=window.PRACTICE.CATS, PBANK=window.PRACTICE.BANK;
+let pQuiz=[], pState=[], pIdx=0, pFinished=false;
+const P_N=15;
+function pT(ru,en){return lang==='ru'?ru:en;}
+function pStart(){
+  pQuiz=shuffle(PBANK).slice(0,Math.min(P_N,PBANK.length)).map(q=>{
+    const nq=Object.assign({},q);
+    if(q.type==='single'||q.type==='multi'){
+      const sh=shuffle(q.options.map((t,i)=>({t,i})));
+      nq.options=sh.map(o=>o.t);
+      if(q.type==='single') nq.answer=sh.findIndex(o=>o.i===q.answer);
+      else nq.answer=sh.map((o,n)=>q.answer.includes(o.i)?n:-1).filter(x=>x>=0);
+    }
+    return nq;
+  });
+  pState=pQuiz.map(()=>({answered:false,sel:null,multi:[],text:'',score:0,graded:false}));
+  pIdx=0; pFinished=false; screen='practice'; render(); window.scrollTo(0,0);
+}
+function pRender(){
+  if(pFinished){ pResults(); return; }
+  const q=pQuiz[pIdx], st=pState[pIdx], m=L(), cat=PCATS[q.cat], letters=['A','B','C','D','E','F'];
+  let body='';
+  if(q.type==='open'){
+    body=`<textarea id="pOpen" placeholder="${pT('Ответь по-английски…','Type your answer…')}" ${st.answered?'readonly':''}>${st.text?esc(st.text):''}</textarea>`;
+  } else {
+    body='<div class="opts">'+q.options.map((o,i)=>{
+      let cls='opt', mark='';
+      const correct=q.type==='single'?i===q.answer:q.answer.includes(i);
+      const picked=q.type==='single'?i===st.sel:st.multi.includes(i);
+      if(st.answered){ cls+=' locked'; if(correct){cls+=' correct';mark='<span class="mark" style="color:var(--green)">✓</span>';} else if(picked){cls+=' wrong';mark='<span class="mark" style="color:var(--accent)">✕</span>';} }
+      else if(picked) cls+=' sel';
+      return `<div class="${cls}" ${st.answered?'':`onclick="pPick(${i})"`}><span class="key">${letters[i]}</span><span class="txt">${esc(o)}</span>${mark}</div>`;
+    }).join('')+'</div>';
+  }
+  let explain='';
+  if(st.answered){
+    if(q.type==='open'){
+      const kw=(q.keywords||[]).map(k=>{const hit=(st.text||'').toLowerCase().includes(k.toLowerCase());return `<span class="kw ${hit?'hit':'miss'}">${hit?'✓':'·'} ${esc(k)}</span>`;}).join(' ');
+      explain=`<div class="explain"><div class="lbl">${pT('Эталонный ответ','Model answer')}</div>${esc(q.model)}<div style="margin-top:8px">${kw}</div><div style="margin-top:8px">${esc(q.explain)}</div></div>`;
+      if(!st.graded) explain+=`<div class="selfgrade"><div class="sg g1" onclick="pGrade(1)">${pT('Верно','Correct')}</div><div class="sg g05" onclick="pGrade(0.5)">${pT('Частично','Partial')}</div><div class="sg g0" onclick="pGrade(0)">${pT('Не знал','Missed')}</div></div>`;
+    } else explain=`<div class="explain"><div class="lbl">${pT('Разбор','Explanation')}</div>${esc(q.explain)}</div>`;
+  }
+  const last=pIdx===pQuiz.length-1, canNext=st.answered&&(q.type!=='open'||st.graded);
+  const prompt=q.type==='multi'?pT('Выбери все верные','Select all correct'):q.type==='open'?pT('Открытый ответ — затем сверься с эталоном','Open answer — then self-check'):pT('Выбери один вариант','Pick one');
+  document.getElementById('practice').innerHTML=`
+    <div class="qtop"><div class="qcount">${m.qof(pIdx+1,pQuiz.length)}</div>
+      <span class="cat-tag" style="color:${cat.color}">${esc(cat.name)}</span></div>
+    <div class="bar"><i style="width:${pIdx/pQuiz.length*100}%"></i></div>
+    <div class="card"><div class="prompt">${prompt}</div>
+      <div class="qdef" style="font-size:17px">${esc(q.q)}</div>${body}${explain}</div>
+    <div class="btn-row">
+      ${!st.answered?`<button class="btn" onclick="pCheck()">${m.check}</button>`
+        :canNext?`<button class="btn" onclick="pNext()">${last?m.last:m.next}</button>`:''}
+      <button class="btn ghost sm" onclick="if(confirm('${pT('Выйти?','Exit?')}')){screen='start';render();}">${m.exit}</button>
+    </div>`;
+  const ta=document.getElementById('pOpen'); if(ta&&!st.answered) ta.oninput=()=>{st.text=ta.value;};
+}
+function pPick(i){const q=pQuiz[pIdx],st=pState[pIdx];if(st.answered)return;
+  if(q.type==='single')st.sel=i; else{const k=st.multi.indexOf(i);k>=0?st.multi.splice(k,1):st.multi.push(i);} pRender();}
+function pCheck(){const q=pQuiz[pIdx],st=pState[pIdx];
+  if(q.type==='open'){const ta=document.getElementById('pOpen');st.text=ta?ta.value:'';if((st.text||'').trim().length<2)return;st.answered=true;}
+  else if(q.type==='single'){if(st.sel===null)return;st.answered=true;st.score=st.sel===q.answer?1:0;}
+  else{if(!st.multi.length)return;st.answered=true;const cs=new Set(q.answer);st.score=(st.multi.length===cs.size&&st.multi.every(x=>cs.has(x)))?1:0;}
+  pRender();}
+function pGrade(s){const st=pState[pIdx];st.score=s;st.graded=true;pRender();}
+function pNext(){ if(pIdx<pQuiz.length-1){pIdx++;pRender();window.scrollTo(0,0);} else {pFinished=true;pResults();window.scrollTo(0,0);} }
+function pResults(){
+  const m=L(), total=pState.reduce((s,x)=>s+x.score,0), pct=Math.round(total/pQuiz.length*100);
+  const byCat={}; pQuiz.forEach((q,i)=>{const c=q.cat;byCat[c]=byCat[c]||{g:0,t:0};byCat[c].t++;byCat[c].g+=pState[i].score;});
+  const bh=Object.keys(byCat).map(c=>{const p=Math.round(byCat[c].g/byCat[c].t*100);
+    return `<div class="brow"><div class="bhead"><span style="color:${PCATS[c].color}">${esc(PCATS[c].name)}</span><span class="pct">${byCat[c].g.toFixed(1)}/${byCat[c].t} · ${p}%</span></div><div class="bbar"><i style="width:${p}%;background:${PCATS[c].color}"></i></div></div>`;}).join('');
+  const vc=m.verdicts.find(v=>pct>=v[0]);
+  const review=pQuiz.map((q,i)=>{const st=pState[i],ok=st.score===1,part=st.score===0.5;
+    const ans=q.type==='open'?(ok?pT('верно','correct'):part?pT('частично','partial'):pT('не знал','missed'))
+      :(q.type==='single'?q.options[q.answer]:q.answer.map(x=>q.options[x]).join('; '));
+    return `<div class="review-item ${ok?'ok':part?'':'no'}"><div class="rq">${i+1}. ${esc(q.q)}</div>
+      <div class="ra"><b>${q.type==='open'?pT('Самооценка:','Self-grade:'):m.correctIs}</b> ${esc(ans)}</div>
+      <div class="ra tiny">${esc(q.explain)}</div></div>`;}).join('');
+  document.getElementById('practice').innerHTML=`
+    <div class="card"><div class="score-hero">
+      <div class="score-ring" style="color:${pct>=80?'var(--green)':pct>=60?'var(--yellow)':'var(--accent)'}">${pct}%</div>
+      <div class="score-sub">${m.scoreSub(total.toFixed(1),pQuiz.length)}</div>
+      <div><span class="verdict" style="color:${vc[2]}">${vc[1]}</span></div></div></div>
+    <div class="card" style="margin-top:16px"><div class="section-title" style="margin-top:0">${m.breakdownTitle}</div><div class="breakdown">${bh}</div></div>
+    <div class="card" style="margin-top:16px"><div class="section-title" style="margin-top:0">${m.reviewTitle}</div>${review}</div>
+    <div class="btn-row"><button class="btn" onclick="pStart()">${m.newTest}</button><button class="btn ghost sm" onclick="screen='start';render()">${m.backHome}</button></div>`;
+}
+
 /* ============ KEYBOARD ============ */
 document.addEventListener('keydown',e=>{
-  if(screen!=='quiz')return;
-  const q=quiz[idx], answered=answers[idx]!==null;
-  if(!answered){
-    const map={'1':0,'2':1,'3':2,'4':3,'a':0,'b':1,'c':2,'d':3};
-    const k=e.key.toLowerCase();
-    if(k in map && map[k]<q.opts.length) pick(map[k]);
-  } else if(e.key==='Enter') next();
+  if(screen==='quiz'){
+    const q=quiz[idx], answered=answers[idx]!==null;
+    if(!answered){
+      const map={'1':0,'2':1,'3':2,'4':3,'a':0,'b':1,'c':2,'d':3}, k=e.key.toLowerCase();
+      if(k in map && map[k]<q.opts.length) pick(map[k]);
+    } else if(e.key==='Enter') next();
+  } else if(screen==='practice' && !pFinished){
+    const q=pQuiz[pIdx], st=pState[pIdx];
+    if(!st.answered && q.type!=='open'){
+      const map={'1':0,'2':1,'3':2,'4':3,'a':0,'b':1,'c':2,'d':3}, k=e.key.toLowerCase();
+      if(k in map && map[k]<q.options.length) pPick(map[k]);
+    }
+    if(e.key==='Enter'){ if(!st.answered) pCheck(); else if(st.answered&&(q.type!=='open'||st.graded)) pNext(); }
+  }
 });
 
 /* ============ INIT ============ */
