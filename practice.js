@@ -8,6 +8,10 @@ const CATS = {
   auto:  {name:'Automation Basics',color:'#ff9f43'},
   edge:  {name:'Edge Cases',      color:'#ff6b9d'},
   agile: {name:'Agile / Process', color:'#22d3ee'},
+  doc:    {name:'Documentation & Reporting', color:'#94a3b8'},
+  browser:{name:'Cross-browser & DevTools', color:'#2dd4bf'},
+  a11y:   {name:'Accessibility (WCAG)', color:'#c084fc'},
+  audio:  {name:'TTS / Audio', color:'#f472b6'},
 };
 
 /* ============================================================
@@ -351,6 +355,97 @@ const BANK = [
 {cat:'agile',type:'single',q:'For a text-to-speech (audio) product, an important QA check unique to the domain is:',
  options:['Button hover color','Audio naturalness, pronunciation, prosody and artifacts','Database indexing','CSS grid layout'],
  answer:1,explain:'Для TTS-продукта (Speechify) важно слуховое качество: естественность, произношение, просодия, артефакты, синхронизация текста и звука.'},
+
+/* ---------- DOCUMENTATION & REPORTING ---------- */
+{cat:'doc',type:'single',q:"What is a 'regression suite'?",
+ options:["A document describing test scope and schedule","A collection of test cases run before each release to ensure existing functionality still works","A single test for one new feature","A bug tracking board"],
+ answer:1,explain:"Regression suite — накопленный со временем набор тест-кейсов, который прогоняют перед каждым релизом, чтобы старое не сломалось. Нашли баг → добавили кейс в регресс."},
+{cat:'doc',type:'single',q:"A release validation summary primarily records which decision?",
+ options:["Which developer wrote the code","The go / no-go decision on shipping the release","The sprint velocity","The database schema"],
+ answer:1,explain:"Release validation summary перед запуском фиксирует go/no-go: что протестировано, результаты, известные проблемы, выпускать ли релиз."},
+{cat:'doc',type:'single',q:"How do a test plan and a test report differ in timing?",
+ options:["They are the same document","Test plan is written before testing (scope/approach); test report after (results)","The test report always comes first","Neither is a real document"],
+ answer:1,explain:"Test plan — ДО тестирования (scope, подход, расписание). Test report/summary — ПОСЛЕ (pass/fail, баги, риски, готовность)."},
+{cat:'doc',type:'open',q:"Name the main QA documents you would maintain and what each is for.",
+ model:"Test plan (scope, approach, schedule), test cases (concrete checks), regression suite (tests run before each release), test report / test summary (results: pass/fail, bugs, risks), and a release validation summary (go/no-go before launch).",
+ keywords:["test plan","scope","test case","regression suite","release","test report","summary","results","go","no-go","validation"],
+ explain:"Вакансия Speechify прямо перечисляет: test cases, regression suites, test reports, release validation summaries."},
+
+/* ---------- CROSS-BROWSER & DEVTOOLS ---------- */
+{cat:'browser',type:'single',q:"Quickest way to check how a site looks on mobile without a phone?",
+ options:["Reinstall the browser","DevTools device toolbar (Ctrl+Shift+M) to emulate devices","Edit the production CSS","Clear cookies"],
+ answer:1,explain:"DevTools device toolbar (Ctrl+Shift+M) эмулирует устройства и разрешения — быстрый responsive-чек."},
+{cat:'browser',type:'multi',q:"Which issues are commonly found in cross-browser testing? (select all)",
+ options:["Layout overlap / broken responsive design","Font and CSS rendering differences","JavaScript API support differences between engines","Database index corruption"],
+ answer:[0,1,2],explain:"Кросс-браузерные баги: вёрстка/responsive, рендеринг CSS/шрифтов, разная поддержка JS API (Blink/Gecko/WebKit). БД ни при чём."},
+{cat:'browser',type:'single',q:"A button does nothing when clicked. Which DevTools tab do you open first to find a JS error?",
+ options:["Application","Console","Elements","Performance"],
+ answer:1,explain:"Console — первым делом: красные JS-ошибки часто и есть причина «кнопка не работает»."},
+{cat:'browser',type:'single',q:"A deleted item still appears in the UI although it is gone from the DB. Where in DevTools do you look first?",
+ options:["Console for syntax errors","Application (cache / localStorage) and Network — is the list refetched or served from cache","Performance tab","Security tab"],
+ answer:1,explain:"«Удалил, а показывается» = почти всегда КЭШ. Application → cache/storage; Network → перезапрашивается ли список или отдаётся из кэша (304 / from cache). Баг фронта, не сервера."},
+{cat:'browser',type:'single',q:"In the Network tab a GET request returns 304. What does it mean?",
+ options:["The server crashed","Not Modified — the resource is unchanged and served from cache","The request was unauthorized","The resource was created"],
+ answer:1,explain:"304 Not Modified — ресурс не изменился, берётся из кэша. Может быть причиной «вижу старые данные»."},
+{cat:'browser',type:'open',q:"A payment button works on Chrome but not on Safari. How do you isolate the cause with DevTools, and what key fields go in the bug report?",
+ model:"Reproduce on Safari, confirm it works on Chrome (so it is browser-specific, likely front-end). In Safari Web Inspector: Console for JS errors (an unsupported JS API), Network to see if the click fires a request, Elements to check if another element overlaps the button (z-index/CSS). Record Safari and OS version. Bug report: clear title mentioning Safari, environment (Safari/OS/build), steps to reproduce, expected vs actual, severity/priority, evidence (video, console error, screenshot), and note that it works on Chrome.",
+ keywords:["reproduce","safari","chrome","browser-specific","console","network","elements","overlap","z-index","version","title","environment","steps","expected","actual","severity","evidence","works on chrome"],
+ explain:"Изоляция: Console (JS-ошибка) + Network (идёт ли запрос) + Elements (перекрытие/z-index). В репорте: окружение Safari/ОС, шаги, exp/act, severity, evidence, и «на Chrome работает» — ценная инфа для дева."},
+
+/* ---------- AGILE CEREMONIES ---------- */
+{cat:'agile',type:'single',q:"Which Agile ceremony is best for surfacing edge cases and requirement gaps early?",
+ options:["Daily standup","Backlog grooming / refinement","Retrospective","Release party"],
+ answer:1,explain:"Grooming/refinement: детально разбирают будущие задачи и требования — лучшее место поднять edge cases и вопросы тестируемости (shift-left)."},
+{cat:'agile',type:'single',q:"What does 'shift-left' mean in testing?",
+ options:["Move testers to another team","Perform testing and QA as early as possible in the SDLC","Test only at the very end","Automate everything"],
+ answer:1,explain:"Shift-left — подключать тестирование/QA как можно раньше в жизненном цикле; раньше нашёл проблему — дешевле фикс."},
+{cat:'agile',type:'single',q:"What is the purpose of sprint planning?",
+ options:["Reflect on the past sprint","Select and estimate the work for the upcoming sprint","Demo to stakeholders","Fix production incidents"],
+ answer:1,explain:"Sprint planning — выбрать и оценить задачи на предстоящий спринт (QA закладывает время на тестирование)."},
+{cat:'agile',type:'single',q:"What is the purpose of a retrospective?",
+ options:["Estimate story points","Reflect on the process and identify improvements","Write test cases","Deploy to production"],
+ answer:1,explain:"Retrospective — команда анализирует процесс и ищет, что улучшить в следующем спринте."},
+
+/* ---------- TRIAGE ---------- */
+{cat:'bug',type:'multi',q:"Which factors define a bug's user impact (for prioritization)? (select all)",
+ options:["Number of users affected","Whether it blocks a key user flow (payment/login)","Whether a workaround exists","The developer's favorite color"],
+ answer:[0,1,2],explain:"User impact = сколько пользователей затронуто, блокирует ли ключевой флоу, есть ли workaround, частота сценария. По этому приоритизируют."},
+{cat:'bug',type:'single',q:"Who typically takes part in bug triage?",
+ options:["Only the CEO","QA, Product, Engineering and often Customer Support","Only developers","Only the tester alone"],
+ answer:1,explain:"Триаж — совместный разбор багов: QA + Product + Engineering + Support (Support приносит реальную частоту жалоб для приоритизации)."},
+
+/* ---------- ACCESSIBILITY (WCAG) ---------- */
+{cat:'a11y',type:'single',q:"In WCAG, the four principles 'POUR' stand for:",
+ options:["Perceivable, Operable, Understandable, Robust","Performance, Output, Usability, Reliability","Portable, Open, Usable, Responsive","Precise, Optimal, Unified, Rapid"],
+ answer:0,explain:"POUR: Perceivable (воспринимаемо), Operable (управляемо), Understandable (понятно), Robust (надёжно)."},
+{cat:'a11y',type:'multi',q:"What does accessibility testing typically check? (select all)",
+ options:["Color contrast of text","Full keyboard navigation (Tab, no mouse)","Alt text for images and screen-reader support","Database query speed"],
+ answer:[0,1,2],explain:"A11y-проверки: контраст, навигация с клавиатуры, alt-текст и screen reader, видимый фокус, подписанные формы."},
+{cat:'a11y',type:'single',q:"Which WCAG conformance level is the common target for products?",
+ options:["Level A","Level AA","Level AAA","Level Z"],
+ answer:1,explain:"AA — стандартный целевой уровень соответствия WCAG (A — минимум, AAA — самый строгий)."},
+
+/* ---------- TTS / AUDIO ---------- */
+{cat:'audio',type:'multi',q:"What is specific to testing a TTS / audio product (vs ordinary web)? (select all)",
+ options:["Naturalness and prosody (intonation, pauses)","Audible artifacts (clicks, cut-offs, distortion)","Latency to start of speech and text-audio sync","SQL index tuning"],
+ answer:[0,1,2],explain:"Для TTS: естественность/просодия, артефакты, латентность (Speechify — sub-second), синхронизация текст↔звук, многоязычность."},
+{cat:'audio',type:'single',q:"Speechify advertises 'sub-second latency'. As QA, what do you measure?",
+ options:["The size of the database","The time from request until speech actually starts playing","The number of CSS files","The screen resolution"],
+ answer:1,explain:"Латентность TTS — время от запроса до старта звучания речи; sub-second значит меньше 1 секунды."},
+
+/* ---------- REINFORCE WEAK SPOTS ---------- */
+{cat:'fund',type:'single',q:"Smoke testing is best described as:",
+ options:["Checking that unchanged areas were not broken after a change","A broad, shallow check that the build is stable enough to test further","An exhaustive test of every input combination","Re-testing a single fixed defect"],
+ answer:1,explain:"Smoke = широкая поверхностная проверка, что билд жив и критическое работает. «Не сломали старое после изменения» — это REGRESSION, не smoke!"},
+{cat:'api',type:'single',q:"Login with a wrong password should return:",
+ options:["200 OK","401 Unauthorized","403 Forbidden","404 Not Found"],
+ answer:1,explain:"Неверные креды на логине → 401 Unauthorized (не аутентифицирован)."},
+{cat:'api',type:'single',q:"A login attempt on a locked / disabled account should return:",
+ options:["401 Unauthorized","403 Forbidden","201 Created","204 No Content"],
+ answer:1,explain:"Заблокированный/отключённый аккаунт → 403 Forbidden (известен, но доступ запрещён). Неверный пароль → 401."},
+{cat:'api',type:'single',q:"A successful DELETE that returns no response body uses which status code?",
+ options:["200 OK","204 No Content","304 Not Modified","404 Not Found"],
+ answer:1,explain:"Успешный DELETE с пустым телом → 204 No Content. (304 — это кэш, не путать.)"},
 ];
 return {CATS, BANK};
 })();
