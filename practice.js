@@ -12,6 +12,7 @@ const CATS = {
   browser:{name:'Cross-browser & DevTools', color:'#2dd4bf'},
   a11y:   {name:'Accessibility (WCAG)', color:'#c084fc'},
   audio:  {name:'TTS / Audio', color:'#f472b6'},
+  cicd:   {name:'CI/CD', color:'#facc15'},
 };
 
 /* ============================================================
@@ -446,6 +447,39 @@ const BANK = [
 {cat:'api',type:'single',q:"A successful DELETE that returns no response body uses which status code?",
  options:["200 OK","204 No Content","304 Not Modified","404 Not Found"],
  answer:1,explain:"Успешный DELETE с пустым телом → 204 No Content. (304 — это кэш, не путать.)"},
+
+/* ---------- CI/CD ---------- */
+{cat:'cicd',type:'single',q:"What is Continuous Integration (CI)?",
+ options:["Manually deploying code once a month","Developers frequently merge code into a shared repo, and each merge automatically builds and runs tests","Writing documentation continuously","A type of exploratory testing"],
+ answer:1,explain:"CI — разработчики часто вливают код в общий репозиторий, и на каждое вливание автоматически идёт сборка + тесты. Цель — ловить поломки сразу."},
+{cat:'cicd',type:'single',q:"Difference between Continuous Delivery and Continuous Deployment?",
+ options:["They are identical","Delivery: code is ready to release but a human triggers it; Deployment: it goes to production automatically after tests pass","Delivery is manual testing, Deployment is automated testing","Delivery deletes old builds"],
+ answer:1,explain:"Continuous Delivery — готово к выкату, кнопку жмёт человек. Continuous Deployment — выкатывается в прод автоматически после прохождения тестов."},
+{cat:'cicd',type:'single',q:"What typically triggers a CI pipeline?",
+ options:["A coffee break","A push, pull request, or merge to the repository","A user logging in","A database backup"],
+ answer:1,explain:"Pipeline запускается на push / pull request / merge (например, в main)."},
+{cat:'cicd',type:'single',q:"In a CI/CD pipeline, what happens when a test stage fails?",
+ options:["The code is deployed anyway","The pipeline stops and the code does not proceed (fail fast)","The test is deleted","Nothing, tests are optional"],
+ answer:1,explain:"Красный билд останавливает pipeline — код дальше не едет (fail fast). Тесты работают как quality gate."},
+{cat:'cicd',type:'multi',q:"Which of these are CI/CD tools? (select all)",
+ options:["GitHub Actions","Jenkins","GitLab CI","Figma"],
+ answer:[0,1,2],explain:"GitHub Actions, Jenkins, GitLab CI (а также CircleCI, Travis) — CI/CD. Figma — дизайн-инструмент."},
+{cat:'cicd',type:'single',q:"Where do automated regression and smoke tests usually run in modern delivery?",
+ options:["Only on the tester's laptop, manually","Automatically inside the CI/CD pipeline on each build/deploy","Once a year","Never, they are always manual"],
+ answer:1,explain:"Автотесты (регресс, smoke) встроены в pipeline и запускаются автоматически на каждый билд/деплой."},
+{cat:'cicd',type:'single',q:"What is the purpose of a smoke test run right after a deployment?",
+ options:["To test every edge case exhaustively","A quick check that the new build is up and core functionality works before deeper testing","To measure code coverage","To delete the previous build"],
+ answer:1,explain:"Post-deploy smoke — быстрая проверка, что свежий билд поднялся и ключевое работает, прежде чем тестировать глубже."},
+{cat:'cicd',type:'single',q:"What is the difference between staging and production?",
+ options:["They are the same server","Staging is a test environment (a copy of prod); production is the live environment for real users","Production is for testing, staging is live","Staging stores backups only"],
+ answer:1,explain:"Staging — тестовое окружение (копия прода), там QA валидирует релиз. Production — боевое, для реальных пользователей."},
+{cat:'cicd',type:'single',q:"What is a 'rollback'?",
+ options:["Adding a new feature","Reverting to the previous working version after a bad release","Running the full regression suite","Merging two branches"],
+ answer:1,explain:"Rollback — откат на предыдущую рабочую версию, если релиз сломал прод."},
+{cat:'cicd',type:'open',q:"How does QA fit into a CI/CD pipeline?",
+ model:"Automated regression and smoke tests run inside the pipeline on every build and act as a quality gate — a red build stops the code from going further. After an automatic deploy to staging, manual QA validates new features and release readiness before promoting to production. Testing runs early and often (shift-left) so feedback is fast.",
+ keywords:["automated","regression","smoke","pipeline","quality gate","red","staging","manual","validate","release","production","shift-left","early"],
+ explain:"QA в CI/CD: автотесты как quality gate в pipeline (красный билд не едет), ручная валидация на staging перед продом, shift-left — рано и часто. У тебя есть практика: SPORTIQ автодеплоится через GitHub → Vercel/Railway."},
 ];
 return {CATS, BANK};
 })();
